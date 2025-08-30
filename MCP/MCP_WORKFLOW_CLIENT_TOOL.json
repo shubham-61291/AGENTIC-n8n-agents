@@ -1,0 +1,178 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        240
+      ],
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "name": "YOUR_OPENAI_CRED_NAME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI assistant inside an n8n workflow.  \nAlways output exactly ONE JSON object (never arrays, never plain text).  \n\nForm submission data:\n- Name: {{ $json.Name }}\n- Email: {{ $json.Email }}\n- Issue: {{ $json.Issue }}\n- Preferred Date: {{ $json[\"PREFERRED DATE\"] }}\n- Preferred Time: {{ $json[\"PREFERRED TIME\"] }}\n\nTask:\n- Always send a Gmail tool call to acknowledge the issue.\n- The message must say that our AI agent will be calling the user on the preferred date & time for further action.\n- Always close with:\n  Regards,\n  Supernova Team \u2013 Making AI Democratic\n- If any field is missing, replace with \"Not provided\".\n",
+        "options": {
+          "systemMessage": "={\n  \"tool\": \"MCP Client\",\n  \"input\": {\n    \"tool\": \"Send_a_message_in_Gmail\",\n    \"input\": {\n      \"sendTo\": \"{{ $json.Email || 'Not provided' }}\",\n      \"subject\": \"Acknowledgement of your request\",\n      \"message\": \"Dear {{ $json.Name || 'Not provided' }},\\n\\nWe have received your issue/request: {{ $json.Issue || 'Not provided' }}.\\n\\nOur AI agent will be calling you on {{ $json['PREFERRED DATE'] || 'Not provided' }} at {{ $json['PREFERRED TIME'] || 'Not provided' }} for further action.\\n\\nRegards,\\nSupernova Team \u2013 Making AI Democratic\",\n      \"emailType\": \"text\"\n    }\n  }\n}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        16
+      ],
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "formTitle": "CONTACT US",
+        "formDescription": "WE WILL GET BACK TO YOU SOON",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Issue",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "PREFERRED DATE",
+              "fieldType": "date",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "PREFERRED TIME",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "10:00 AM"
+                  },
+                  {
+                    "option": "11:00 AM"
+                  },
+                  {
+                    "option": "12:00 PM"
+                  },
+                  {
+                    "option": "13:00 PM"
+                  },
+                  {
+                    "option": "14:00 PM"
+                  },
+                  {
+                    "option": "15:00 PM"
+                  },
+                  {
+                    "option": "16:00 PM"
+                  },
+                  {
+                    "option": "17:00 PM"
+                  },
+                  {
+                    "option": "18:00 PM"
+                  },
+                  {
+                    "option": "19:00 PM"
+                  }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -176,
+        32
+      ],
+      "name": "On form submission",
+      "webhookId": "YOUR_WEBHOOK_ID"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "YOUR_MCP_ENDPOINT_URL",
+        "include": "selected",
+        "includeTools": [
+          "Send_a_message_in_Gmail"
+        ],
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        272
+      ],
+      "name": "MCP Client"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
+  }
+}
