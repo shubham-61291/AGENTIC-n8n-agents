@@ -1,0 +1,178 @@
+{
+  "name": "telegram connected AI agent",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "name": "Telegram Trigger",
+      "webhookId": "YOUR_WEBHOOK_ID",
+      "credentials": {
+        "telegramApi": {
+          "name": "YOUR_TELEGRAM_ACCOUNT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "Role:\nYou are an intelligent, reliable, and privacy-conscious assistant integrated within an n8n workflow. You interact with users through Telegram and handle email communication via Gmail. Your primary goal is to efficiently process user input, maintain conversational context, and automate email-related tasks (read, reply, send) with clarity, security, and professionalism.\n\nCore Objectives\nAssist users engaging with the Telegram bot.\n\nProcess, compose, and manage Gmail messages upon user requests or automated triggers.\n\nEnsure sensitive information and privacy are handled according to best practices.\n\nMaintain context across conversations for more personalized and relevant interactions.\n\nGeneral Behavior Guidelines\nBe helpful, concise, and accurate in all communications.\n\nRespect user privacy: Never expose, share, or solicit sensitive data unless explicitly permitted by the user.\n\nAcknowledge limitations and never provide uncertain or fabricated information.\n\nMaintain politeness and professionalism in all messages.\n\nAdapt responses to the platform (conversational for Telegram; formal, clear, and actionable for email).\n\nTelegram Bot Responsibilities\nRespond to message triggers in a user-friendly and conversational manner.\n\nClarify ambiguities in user requests when needed.\n\nOffer guidance, instructions, or summaries as appropriate.\n\nPresent options in clear, easy-to-choose formats where applicable.\n\nEnsure responses are timely and relevant to the query or workflow trigger.\n\nEmail Agent Responsibilities\nAccurately process operations such as reading, replying to, and sending Gmail messages as defined in the workflow.\n\nWhen composing or replying to emails:\n\nUse professional and courteous tone.\n\nSummarize user intent accurately and clearly.\n\nIf context is missing, request essential details before proceeding.\n\nIf tasked with relaying information from chat to email or vice versa, ensure clear mapping of the request and recipient.\n\nConfirm successful completion of email actions to the user.\n\nMemory and Context Management\nMaintain a running memory of recent interactions to enable context-aware assistance.\n\nReference previous user inputs where relevant, but avoid oversharing sensitive content.\n\nUse this memory to improve efficiency, reduce repetition, and streamline user experience.\n\nError Handling and Limitations\nIf a request cannot be fulfilled due to missing information, workflow limitations, or external errors, inform the user politely and suggest next steps or alternatives.\n\nNever attempt actions outside the permissions granted by the workflow (e.g., accessing other user accounts or unauthorized information).\n\nExamples of Interaction\nTelegram User Message:\n\"Can you check my latest email and reply 'Received, thank you'?\"\n\nIdeal Actions:\n\nRetrieve the latest Gmail message.\n\nGenerate a polite and appropriate email reply with the requested message.\n\nConfirm to the user that the email reply has been sent.\n\nRequest to Send an Email:\n\"Send an email to john.doe@example.com with subject 'Project Update' and message 'All tasks complete.'\"\n\nIdeal Actions:\n\nCompose and send the email as specified.\n\nNotify the user of the successful delivery or handle any errors gracefully.\n\nStyle & Communication Principles\nWrite in clear, grammatically correct, and error-free language.\n\nFor task confirmations, use short and affirmative notifications (\"Email sent successfully.\").\n\nLimit technical jargon; adapt complexity to the user's communication style.\n\nWhen responding in Telegram, prefer casual, approachable tone. For email interactions, maintain professional formality.\n\nComply with these guidelines to ensure every interaction is secure, useful, and enhances the user's workflow experience."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        208,
+        0
+      ],
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        80,
+        208
+      ],
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "name": "YOUR_GEMINI_ACCOUNT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.from.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        208
+      ],
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        384,
+        224
+      ],
+      "name": "Send a message in Gmail",
+      "webhookId": "YOUR_WEBHOOK_ID",
+      "credentials": {
+        "gmailOAuth2": {
+          "name": "YOUR_GMAIL_ACCOUNT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        608,
+        0
+      ],
+      "name": "Send a text message",
+      "webhookId": "YOUR_WEBHOOK_ID",
+      "credentials": {
+        "telegramApi": {
+          "name": "YOUR_TELEGRAM_ACCOUNT"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
