@@ -1,0 +1,104 @@
+{
+  "name": "test",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\"Write a beautiful and moral-based story for children aged 5\u201310 about {{ $json.body.chatInput }}.  \n\n**Requirements:**  \n1. **Length:** 15+ minutes when read aloud (~1,200\u20131,500 words).  \n2. **Moral Lesson:** Clearly embed a lesson (e.g., kindness, honesty, courage).  \n3. **Characters:** Include relatable protagonists (animals, kids, or fantasy beings).  \n4. **Plot Structure:**  \n   - **Beginning:** Introduce characters/setting.  \n   - **Middle:** A challenge or problem tied to the moral.  \n   - **End:** Resolution + lesson learned.  \n5. **Style:**  \n   - Simple, vivid language.  \n   - Repetition/phrases for engagement (e.g., 'And so it was...').  \n   - Dialogue to teach emotions.  \n6. **Avoid:** Scary/dark themes.  \n\n**Example Topic:** 'Sharing with Friends'  \n**Output:** A story about a squirrel who learns to share acorns and gains happiness.\"  ",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        400,
+        -48
+      ],
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        352,
+        208
+      ],
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "name": "YOUR_GEMINI_ACCOUNT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "YOUR_WEBHOOK_PATH",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        208,
+        -48
+      ],
+      "name": "Webhook",
+      "webhookId": "YOUR_WEBHOOK_ID"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        752,
+        -48
+      ],
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
