@@ -1,0 +1,356 @@
+{
+  "name": "email labelling and reply",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "readStatus": "unread"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "name": "Gmail Trigger"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite-preview-06-17",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        240,
+        220
+      ],
+      "name": "Google Gemini Chat Model"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Subject: {{ $json.headers.subject }}  \nBody:  {{ $json.text }}",
+        "options": {
+          "systemMessage": "You are an email classification AI. Analyze the email's subject and body, then return **only one** of these labels:  \n\n### **1. SALES** (Use if ANY of these conditions are met)  \n- **Quote Request**:  \n  - Keywords: \"quote\", \"pricing\", \"how much\", \"cost\", \"estimate\", \"rate\", \"budget\".  \n  - Examples:  \n    - \"Can you send a quote for 100 units?\"  \n    - \"What's the pricing for X?\"  \n\n- **Order Request**:  \n  - Keywords: \"order\", \"buy\", \"purchase\", \"place an order\", \"procure\", \"want to order\".  \n  - Examples:  \n    - \"We want to buy 50 pieces.\"  \n    - \"Please process our order.\"  \n\n- **Sales Inquiry**:  \n  - Keywords: \"do you\", \"can you\", \"is it possible\", \"looking for\", \"need help with\".  \n  - Examples:  \n    - \"Do you offer customization?\"  \n    - \"Can you ship to Germany?\"  \n\n### **2. PROMOTION** (Use if ANY of these conditions are met)  \n- Keywords: \"discount\", \"offer\", \"deal\", \"sale\", \"limited time\", \"promo\", \"exclusive\", \"newsletter\", \"campaign\".  \n- Examples:  \n  - \"Get 50% off this weekend!\"  \n  - \"Exclusive deal for subscribers.\"  \n\n### **3. OTHER** (Default for non-sales/non-promotion emails)  \n- Includes:  \n  - Customer support (\"my order is late\").  \n  - Spam (\"You won a prize!\").  \n  - Personal/off-topic emails.  \n\n### **Rules**  \n- **Priority**: If both sales and promotion keywords exist, prioritize **SALES**.  \n- **Case Insensitive**: Ignore uppercase/lowercase (e.g., \"QUOTE\" = \"quote\").  \n- **No Explanations**: Return **only the label** (e.g., \"SALES\", \"PROMOTION\", \"OTHER\").  "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "name": "email label classifier"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "SALES",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "PROMOTION",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "OTHER",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        580,
+        0
+      ],
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "YOUR_LABEL_ID"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        800,
+        200
+      ],
+      "name": "OTHER",
+      "webhookId": "YOUR_WEBHOOK_PLACEHOLDER"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}\n",
+        "labelIds": [
+          "YOUR_LABEL_ID"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        800,
+        0
+      ],
+      "name": "PROMOTION",
+      "webhookId": "YOUR_WEBHOOK_PLACEHOLDER"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "YOUR_LABEL_ID"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        780,
+        -200
+      ],
+      "name": "SALES",
+      "webhookId": "YOUR_WEBHOOK_PLACEHOLDER"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1020,
+        0
+      ],
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1020,
+        200
+      ],
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ $('SALES').item.json.id }}",
+        "emailType": "text",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1440,
+        -360
+      ],
+      "name": "Reply to a message",
+      "webhookId": "YOUR_WEBHOOK_PLACEHOLDER"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=subject :- {{ $('Gmail Trigger').item.json.headers.subject }}\nbody :-  {{ $('Gmail Trigger').item.json.text }}",
+        "options": {
+          "systemMessage": "ACT AS LUCIFER'S AUTOMATED EMAIL ASSISTANT. FOR EVERY INQUIRY:\n\n1. ANALYZE AND EXTRACT:\n   - Name: First name after \"my name is\", \"I'm\", or \"from [Name]\" (default: \"there\")\n   - Pain Point: Exact phrase from \"need help with\", \"struggling with\", \"looking for\"\n   - Context: Industry/use case mentioned (sales, HR, etc.)\n\n2. RESPONSE TEMPLATE:\nSubject: Re: {original_subject}\n\nHi {name},\n\nI understand you're {pain_point} for your {context}. We specialize in {specific_solution} and have helped {similar_client} achieve {quantifiable_result}. \n\nPlease fill this form to schedule a meeting:\nYOUR_MEETING_FORM_LINK\n\nWe'll discuss:\n1. {first_benefit}  \n2. {second_benefit}\n\nBest regards,\nLUCIFER\n\n3. HARD RULES:\n   - MUST use exact phrase: \"fill this form to schedule a meeting\"\n   - Scheduling link NEVER changes\n   - ALWAYS include 2 specific benefits tied to their need\n   - Name extraction REQUIRED (fallback to \"there\")\n   - Banned phrases: \"let me know\", \"if you're interested\", \"maybe\"\n\n4. EXAMPLE OUTPUT:\nSubject: Re: Automating client onboarding\n\nHi Sarah,\n\nI understand you're looking to automate client onboarding for your law firm. We specialize in legal-tech workflows and have helped a 50-attorney practice save 15 hours/week.  \n\nPlease fill this form to schedule a meeting:  \nYOUR_MEETING_FORM_LINK  \n\nWe'll discuss:  \n1. Paperless intake forms with e-signatures  \n2. Automatic matter creation in your CMS  \n\nBest regards,  \nLUCIFER"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        1080,
+        -360
+      ],
+      "name": "tailored response"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "email label classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "email label classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "tailored response",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "email label classifier": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "SALES",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PROMOTION",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "OTHER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PROMOTION": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OTHER": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SALES": {
+      "main": [
+        [
+          {
+            "node": "tailored response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "tailored response": {
+      "main": [
+        [
+          {
+            "node": "Reply to a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
