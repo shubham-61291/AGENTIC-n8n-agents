@@ -27,6 +27,7 @@ DEMO VIDEO :- https://www.youtube.com/watch?v=czIQ1PzZAg0&list=PLlRRgrbOaGcaHAbV
 
 insta-scraper-agent
 Uses Apify to fetch Instagram reel data, sorts by play count, and stores top 5 reels per creator into Airtable.
+DEMO VIDEO : - https://www.youtube.com/watch?v=IiFAXrHNmjI&list=PLlRRgrbOaGcaHAbVCTk70Nf0GerWXrqy1&index=6
 
 mcpserver and mcpsimpleworkflow
 Demonstrates MCP (Model Context Protocol). The server exposes Gmail send as a tool, and the client workflow calls it via AI Agent. Shows how MCP can separate tool hosting and tool usage.
