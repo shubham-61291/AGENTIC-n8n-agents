@@ -39,6 +39,7 @@ DEMO VIDEO :- https://www.youtube.com/watch?v=cAWc6gxOVek&list=PLlRRgrbOaGcaHAbV
 
 story-generator-agent
 Webhook-triggered children’s story generator. Produces 1200–1500 word moral-based stories using Google Gemini.
+DEMO VIDEO :- https://www.youtube.com/watch?v=-Qh1JDsCtR8&list=PLlRRgrbOaGcaHAbVCTk70Nf0GerWXrqy1&index=8
 
 Setup Instructions
 
