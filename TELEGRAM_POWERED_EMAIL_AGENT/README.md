@@ -96,6 +96,8 @@ Composing new messages: “Send email to manager@company.com
 
 Notifications: Get confirmation on successful Gmail actions directly in chat.
 
+DEMO VIDEO :- https://www.youtube.com/watch?v=cAWc6gxOVek&list=PLlRRgrbOaGcaHAbVCTk70Nf0GerWXrqy1&index=7
+
 Author
 Shubham Singh
 
