@@ -23,6 +23,7 @@ DEMO VIDEO :- https://www.youtube.com/watch?v=mOv1Xj8OaPE&list=PLlRRgrbOaGcaHAbV
 
 hr-chatbot-website-integration
 RAG-based chatbot that retrieves HR policies from Supabase vector store, remembers context via Postgres, and answers employee queries through a web interface.
+DEMO VIDEO :- https://www.youtube.com/watch?v=czIQ1PzZAg0&list=PLlRRgrbOaGcaHAbVCTk70Nf0GerWXrqy1&index=5
 
 insta-scraper-agent
 Uses Apify to fetch Instagram reel data, sorts by play count, and stores top 5 reels per creator into Airtable.
