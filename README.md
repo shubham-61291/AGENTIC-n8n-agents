@@ -19,6 +19,7 @@ DEMO VIDEO :- https://www.youtube.com/watch?v=oTsM5ict2xc&list=PLlRRgrbOaGcaHAbV
 
 hr-cv-screening-agent
 Extracts CVs from Gmail, evaluates them against a Job Description, and rates candidates out of 10 in Google Sheets.
+DEMO VIDEO :- https://www.youtube.com/watch?v=mOv1Xj8OaPE&list=PLlRRgrbOaGcaHAbVCTk70Nf0GerWXrqy1&index=2
 
 hr-chatbot-website-integration
 RAG-based chatbot that retrieves HR policies from Supabase vector store, remembers context via Postgres, and answers employee queries through a web interface.
