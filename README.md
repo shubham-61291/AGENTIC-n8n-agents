@@ -14,6 +14,7 @@ Automates outbound calls using Retell AI, with contact details managed in Google
 
 auto-email-labelling-reply-agent
 Reads Gmail messages, labels them (Sales, Promotion, Other), and sends AI-powered replies.
+DEMO VIDEO :- https://www.youtube.com/watch?v=oTsM5ict2xc&list=PLlRRgrbOaGcaHAbVCTk70Nf0GerWXrqy1
 
 hr-cv-screening-agent
 Extracts CVs from Gmail, evaluates them against a Job Description, and rates candidates out of 10 in Google Sheets.
