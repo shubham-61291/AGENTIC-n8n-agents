@@ -65,6 +65,8 @@ Add CRM integration (HubSpot, Salesforce).
 
 Extend with follow-up email automation after the call.
 
+DEMO VIDEO : - https://www.youtube.com/watch?v=e_3sMgFad9E&list=PLlRRgrbOaGcaHAbVCTk70Nf0GerWXrqy1&index=3
+
 Author
 Shubham Singh
 
