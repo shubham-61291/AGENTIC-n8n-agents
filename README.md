@@ -27,6 +27,7 @@ Uses Apify to fetch Instagram reel data, sorts by play count, and stores top 5 r
 
 mcpserver and mcpsimpleworkflow
 Demonstrates MCP (Model Context Protocol). The server exposes Gmail send as a tool, and the client workflow calls it via AI Agent. Shows how MCP can separate tool hosting and tool usage.
+DEMO VIDEO :- https://www.youtube.com/watch?v=21wv7vN3UvA&list=PLlRRgrbOaGcaHAbVCTk70Nf0GerWXrqy1&index=4
 
 telegram-powered-email-handling-agent
 Telegram bot connected with AI Agent to manage Gmail actions (compose, send, reply) using natural language.
