@@ -34,6 +34,7 @@ DEMO VIDEO :- https://www.youtube.com/watch?v=21wv7vN3UvA&list=PLlRRgrbOaGcaHAbV
 
 telegram-powered-email-handling-agent
 Telegram bot connected with AI Agent to manage Gmail actions (compose, send, reply) using natural language.
+DEMO VIDEO :- https://www.youtube.com/watch?v=cAWc6gxOVek&list=PLlRRgrbOaGcaHAbVCTk70Nf0GerWXrqy1&index=7
 
 story-generator-agent
 Webhook-triggered children’s story generator. Produces 1200–1500 word moral-based stories using Google Gemini.
