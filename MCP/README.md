@@ -73,6 +73,8 @@ Keep Gmail and OpenAI credentials in n8n Credentials vault.
 
 The MCP endpoint should be protected if exposed beyond your environment.
 
+DEMO VIDEO :- https://www.youtube.com/watch?v=21wv7vN3UvA&list=PLlRRgrbOaGcaHAbVCTk70Nf0GerWXrqy1&index=4
+
 Importance of MCP in Autonomous Agents
 The Model Context Protocol (MCP) is rapidly becoming a backbone for connecting agents with external tools in a secure, standardized way. Instead of hardwiring API calls inside every workflow, MCP allows tools like Gmail, Calendars, Databases, and Custom APIs to be exposed as reusable capabilities. Autonomous agents can then dynamically discover and invoke these tools as needed.
 
