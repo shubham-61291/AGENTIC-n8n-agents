@@ -84,6 +84,8 @@ Bedtime story assistant triggered from a website or chatbot.
 
 Moral storytelling companion for schools or parents.
 
+DEMO VIDEO :- https://www.youtube.com/watch?v=-Qh1JDsCtR8&list=PLlRRgrbOaGcaHAbVCTk70Nf0GerWXrqy1&index=8
+
 Author
 Shubham Singh
 
