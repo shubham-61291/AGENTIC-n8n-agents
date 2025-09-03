@@ -81,6 +81,8 @@ Add a test creator into Airtable “creator list”.
 
 Execute workflow and confirm the top 5 reels are inserted into “best performing reels” table with correct details.
 
+DEMO VIDEO : - https://www.youtube.com/watch?v=IiFAXrHNmjI&list=PLlRRgrbOaGcaHAbVCTk70Nf0GerWXrqy1&index=6
+
 Author
 Shubham Singh
 
