@@ -62,6 +62,8 @@ Do not commit real API keys, Gmail credentials, or sheet IDs.
 
 Use environment variables inside n8n for sensitive values.
 
+DEMO VIDEO :- https://www.youtube.com/watch?v=mOv1Xj8OaPE&list=PLlRRgrbOaGcaHAbVCTk70Nf0GerWXrqy1&index=2
+
 Next Steps
 
 Add thresholds (e.g., auto-flag candidates below 5/10).
