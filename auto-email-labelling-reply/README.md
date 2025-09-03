@@ -62,6 +62,8 @@ Do not commit your Gmail API credentials or Gemini API keys to GitHub.
 
 Use environment variables inside n8n for sensitive information.
 
+DEMO VIDEO :- https://www.youtube.com/watch?v=oTsM5ict2xc&list=PLlRRgrbOaGcaHAbVCTk70Nf0GerWXrqy1
+
 Next Steps
 
 Extend the workflow to log responses into Google Sheets or CRM.
