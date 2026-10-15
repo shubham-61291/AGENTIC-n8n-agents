@@ -1,74 +1,118 @@
-Sales Calling & Meeting Scheduling Agent (n8n + Retell AI)
+<div align="center">
 
-This agent automates sales outreach and meeting scheduling using n8n + Retell AI.
-It fetches lead details from Google Sheets, passes them to Retell AI, and Retell's conversational agent handles the actual call flow — including capturing requirements and scheduling meetings.
+# Sales Calling and Meeting Scheduling Agent
 
-Features
+### Automate outbound lead calls using n8n, Google Sheets, and Retell AI
 
-Fetches lead details (name, email, phone, issue) from Google Sheets.
+[![n8n](https://img.shields.io/badge/automation-n8n-EA4B71?style=flat-square)](https://n8n.io/)
+[![Voice AI](https://img.shields.io/badge/voice%20AI-Retell-4B7BEC?style=flat-square)](https://www.retellai.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](./LICENSE)
 
-Initiates automated outbound calls via Retell AI.
+</div>
 
-Provides Retell agent with dynamic context (lead name, requirement, contact info).
+## Overview
 
-Retell AI agent manages the conversation:
-• Introduces your company/product
-• Understands the lead’s requirements
-• Offers to schedule a meeting/demo on the spot
+This workflow automates outbound sales outreach by reading lead details from Google Sheets and sending the call request to Retell AI. Retell’s configured conversational agent manages the live call: it introduces the company or product, uses the supplied lead context, understands the lead’s requirements, and offers to schedule a meeting or demo during the conversation.
 
-Extensible → results can be logged back into Sheets or your CRM.
+The n8n workflow is intentionally straightforward: a manual trigger starts the process, Google Sheets provides the lead rows, and an HTTP Request node calls Retell AI’s `create-phone-call` endpoint.
 
-Files
+## Workflow and call context
 
-sales_calling_agent_n8n.json → n8n workflow export.
+| Component | Responsibility |
+|---|---|
+| **Manual Trigger** | Starts the workflow when the operator clicks **Execute workflow**. The project also notes that a Cron trigger can be used for scheduled operation. |
+| **Google Sheets — Get row(s) in sheet** | Retrieves lead data for the calling workflow. |
+| **HTTP Request** | Sends the outbound-call request to Retell AI (`https://api.retellai.com/v2/create-phone-call`). |
+| **Retell conversational agent** | Uses configured agent instructions and dynamic context to introduce the offering, understand the issue, and offer a meeting/demo. |
 
-Setup Instructions
+The lead context described in the project includes **name, email, phone number, and issue/requirement**. Retell’s agent is expected to use that context during the conversation.
 
-Import Workflow
+## Expected Google Sheets columns
 
-In n8n, go to Workflows → Import from File.
+The original setup instructions specify these column labels:
 
-Upload sales_calling_agent_n8n.json.
+- `NAME`
+- `EMAIL ADD`
+- `MOBILE NUMBER`
+- `ISSUE`
 
-Google Sheets Setup
+Ensure the columns and mapping used in your workflow match the sheet containing the leads.
 
-Replace YOUR_SHEET_ID and YOUR_SHEET_NAME in the workflow.
+## Requirements
 
-Ensure the sheet includes: NAME, EMAIL ADD, MOBILE NUMBER, ISSUE.
+- n8n.
+- A Google Sheet containing lead contact details.
+- Google Sheets credentials configured in n8n.
+- A Retell AI account, configured voice agent, API key, caller ID, and agent ID.
+- A Retell agent prompt/profile configured to handle the desired sales conversation and meeting-scheduling flow.
 
-Retell AI Setup
+## Setup
 
-Replace placeholders:
-• YOUR_API_KEY → Retell AI key
-• FROM_NUMBER_PLACEHOLDER → your caller ID
-• AGENT_ID_PLACEHOLDER → your Retell agent ID
+### 1. Import the workflow
 
-Make sure your Retell agent is trained/configured to schedule meetings.
+Import [`sales_calling_agent_n8n.json`](./sales_calling_agent_n8n.json) through **Workflows → Import from File**.
 
-Run
+### 2. Configure Google Sheets
 
-Trigger manually or schedule with Cron in n8n.
+Connect your Google Sheets credential. Set the sheet ID and sheet name, and confirm that the sheet includes the required `NAME`, `EMAIL ADD`, `MOBILE NUMBER`, and `ISSUE` fields.
 
-For each lead row, Retell AI will place a call and attempt to schedule a meeting.
+### 3. Configure Retell AI
 
-Security
+Supply the Retell API key, caller ID, and Retell agent ID using the appropriate n8n node parameters and credential mechanisms. The agent should be configured to introduce your company/product, understand the lead’s requirements, and offer a meeting or demo.
 
-Never commit real API keys or sheet IDs.
+| Placeholder | Purpose |
+|---|---|
+| `YOUR_SHEET_ID` | Your Google spreadsheet ID. |
+| `YOUR_SHEET_NAME` | Name of the sheet containing lead rows. |
+| `YOUR_API_KEY` | Retell AI API key. |
+| `FROM_NUMBER_PLACEHOLDER` | Configured caller ID / outbound number. |
+| `AGENT_ID_PLACEHOLDER` | Retell conversational-agent ID. |
 
-Use environment variables in n8n for production.
+The public JSON is sanitized for sharing. Restore private values in your own n8n instance, and do not commit real API keys, phone numbers, or account identifiers.
 
-Next Steps
+### 4. Run or schedule
 
-Write call outcomes (meeting scheduled, status, notes) back into Google Sheets.
+Run the workflow manually to test a small, controlled set of leads. The project notes that a Cron trigger can be used to schedule execution. Verify that the correct lead data reaches Retell and that the configured agent makes the intended outbound call.
 
-Add CRM integration (HubSpot, Salesforce).
+## Results and possible extensions
 
-Extend with follow-up email automation after the call.
+The project describes meeting scheduling as part of the Retell agent’s conversation. The n8n workflow can be extended to write call outcomes—such as whether a meeting was scheduled, call status, and notes—back into Google Sheets or a CRM. Other suggested extensions include HubSpot/Salesforce integration and follow-up email automation.
 
-DEMO VIDEO : - https://www.youtube.com/watch?v=e_3sMgFad9E&list=PLlRRgrbOaGcaHAbVCTk70Nf0GerWXrqy1&index=3
+## Security and operating guidance
 
-Author
-Shubham Singh
+- Keep Retell credentials and Google Sheets identifiers private; use n8n Credentials or environment variables in production.
+- Test with controlled leads and ensure the call recipient and provided context are correct.
+- Observe applicable consent, telemarketing, and calling rules for the regions in which you operate.
+- Treat call outcomes and contact details as sensitive customer data.
 
-License
+## Demonstration
+
+[**Watch the sales-calling and meeting-scheduling demo**](https://www.youtube.com/watch?v=e_3sMgFad9E&list=PLlRRgrbOaGcaHAbVCTk70Nf0GerWXrqy1&index=3)
+
+## License
+
+MIT License. See [`LICENSE`](./LICENSE). Full text:
+
+### MIT License
+
 MIT License
+
+Copyright (c) 2026 Shubham Kumar Singh
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
