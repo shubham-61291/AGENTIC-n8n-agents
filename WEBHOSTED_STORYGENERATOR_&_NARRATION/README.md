@@ -1,93 +1,128 @@
-Web-based Children’s Story Generator (n8n + Google Gemini)
+<div align="center">
 
-Purpose
-This agent generates long, moral-based children’s stories through a simple web endpoint. It is designed for ages 5–10, producing vivid and engaging stories of 1,200–1,500 words that take about 15+ minutes to read aloud. Each story embeds a clear moral lesson (e.g., kindness, honesty, courage) and avoids dark or scary themes. The agent uses Google Gemini as the language model and can be triggered via an HTTP webhook.
+# Web-Based Children’s Story Generator
 
-Core Flow
+### Topic-driven moral storytelling through an HTTP webhook
 
-Trigger: Webhook node receives POST requests with a chatInput value (topic).
+[![n8n](https://img.shields.io/badge/automation-n8n-EA4B71?style=flat-square)](https://n8n.io/)
+[![Model](https://img.shields.io/badge/model-Google%20Gemini-4B7BEC?style=flat-square)](https://ai.google.dev/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](./LICENSE)
 
-LLM: Google Gemini Chat Model processes the input.
+</div>
 
-Chain: Basic LLM Chain node applies a system-defined storytelling template to ensure structure and moral consistency.
+## Overview
 
-Response: Respond to Webhook node sends the generated story back to the requester.
+This workflow generates long, moral-based stories for children aged **5–10** through a simple HTTP endpoint. A caller submits a topic in the `chatInput` field; Google Gemini generates a story through a Basic LLM Chain, and the Respond to Webhook node returns the story text to the requester.
 
-Story Requirements (as enforced in the workflow prompt)
+The prompt is designed for stories of **1,200–1,500 words**—approximately **15+ minutes read aloud**—with an explicit moral lesson, engaging characters, a clear narrative arc, vivid and simple language, and no dark or scary themes.
 
-Length: 1,200–1,500 words (~15+ minutes read aloud).
+## Story design requirements
 
-Moral: Embeds a clear lesson (kindness, honesty, courage, etc.).
+| Dimension | Prompt requirements described in the project |
+|---|---|
+| **Audience** | Children aged 5–10. |
+| **Length** | Approximately 1,200–1,500 words, targeting 15+ minutes when read aloud. |
+| **Moral lesson** | A clear lesson such as kindness, honesty, or courage. |
+| **Characters** | Relatable protagonists, including children, animals, or fantasy characters. |
+| **Beginning** | Introduce the characters and setting. |
+| **Middle** | Present a challenge or problem tied to the moral. |
+| **End** | Resolve the problem and bring out the lesson learned. |
+| **Style** | Simple, vivid language, repetition for engagement (for example, “And so it was…”), and dialogue that conveys emotion. |
+| **Tone constraints** | Avoid dark or scary themes. |
 
-Characters: Relatable (kids, animals, or fantasy beings).
+## Workflow architecture
 
-Plot Structure:
+1. **Webhook** — accepts a `POST` request containing a topic in `chatInput`.
+2. **Basic LLM Chain** — applies the story-generation prompt and organizes the requested story structure.
+3. **Google Gemini Chat Model** — generates the story content.
+4. **Respond to Webhook** — sends the generated story text back to the caller over HTTP.
 
-Beginning: introduce characters and setting.
+This structure supports integration with a website, children’s educational app, chatbot, or another client that can issue an HTTP request and display the returned story.
 
-Middle: introduce a challenge tied to the moral.
+## Example request
 
-End: resolve the problem and present the lesson.
+Send a `POST` request to your active webhook with a JSON body such as:
 
-Style: vivid language, repetition for engagement, dialogue to convey emotions.
+```json
+{
+  "chatInput": "Helping a lost puppy"
+}
+```
 
-Avoid: scary or dark themes.
+Another example topic is **“Sharing with Friends”**, in which a squirrel learns to share acorns and finds happiness.
 
-Example topic: “Sharing with Friends” → A squirrel learns to share acorns and finds happiness.
+The workflow’s documented result is a structured, moral-based story on the supplied theme, returned through the HTTP response.
 
-Features
+## Requirements
 
-Generates complete structured children’s stories from simple prompts.
+- n8n with Webhook, Basic LLM Chain, Google Gemini Chat Model, and Respond to Webhook nodes.
+- Google Gemini API access configured in n8n.
+- A client or website capable of sending a JSON `POST` request to the webhook.
 
-Built-in template enforces moral storytelling style.
+## Setup
 
-Simple webhook trigger for integration with websites or apps.
+### 1. Import the workflow
 
-Automatic HTTP response with full story text.
+Import [`WEBBASED_STORYGENERATOR_WITH_NARRATION.json`](./WEBBASED_STORYGENERATOR_WITH_NARRATION.json) using **Workflows → Import from File**.
 
-Setup Instructions
+### 2. Configure Google Gemini
 
-Import Workflow
+Add the Google Gemini (PaLM/Gemini API) credential in n8n and attach it to the chat-model node.
 
-In n8n, go to Workflows → Import from File and load the JSON.
+### 3. Configure the webhook
 
-Configure Credentials
+Set a webhook ID/path appropriate for your n8n environment, save the workflow, and use the generated URL for requests. The public export may use a placeholder for the webhook path or other environment-specific data.
 
-Google Gemini (PaLM API) → connect via n8n Credentials.
+| Placeholder | Purpose |
+|---|---|
+| `YOUR_WEBHOOK_ID` | Webhook identifier generated in your n8n instance. |
+| `YOUR_WEBHOOK_PATH` | Path used by the webhook endpoint. |
+| `YOUR_GEMINI_API_ID` / `YOUR_GEMINI_ACCOUNT` | Reference to the Gemini credential/account used by your environment. |
 
-Replace Placeholders (for public release)
+### 4. Run the workflow
 
-YOUR_WEBHOOK_ID → webhook ID.
+Send a `POST` request containing a `chatInput` topic, such as `{"chatInput":"Helping a lost puppy"}`. Confirm that the webhook returns the generated story text.
 
-YOUR_WEBHOOK_PATH → webhook path.
+## Use cases
 
-YOUR_GEMINI_API_ID / YOUR_GEMINI_ACCOUNT → Gemini API credentials.
+- Story generation for children’s educational apps.
+- A bedtime-story assistant triggered from a website or chatbot.
+- A moral-storytelling companion for schools or parents.
 
-Run Workflow
+## Security and deployment
 
-Send a POST request to the webhook URL with a chatInput topic, e.g.:
-{ "chatInput": "Helping a lost puppy" }
+- Do not publish live webhook IDs or Gemini credentials.
+- Store secrets in n8n Credentials or environment variables.
+- If the endpoint is exposed publicly, apply suitable access controls and request limits for your deployment.
 
-The workflow will generate a structured, moral-based story on the given theme.
+## Demonstration
 
-Security Notes
+[**Watch the web-based story-generator demo**](https://www.youtube.com/watch?v=-Qh1JDsCtR8&list=PLlRRgrbOaGcaHAbVCTk70Nf0GerWXrqy1&index=8)
 
-Do not expose real webhook IDs or Gemini credentials in public repositories.
+## License
 
-Use environment variables or the n8n Credentials vault for sensitive values.
+MIT License. See [`LICENSE`](./LICENSE). Full text:
 
-Example Use Cases
+### MIT License
 
-Story generator for kids’ educational apps.
-
-Bedtime story assistant triggered from a website or chatbot.
-
-Moral storytelling companion for schools or parents.
-
-DEMO VIDEO :- https://www.youtube.com/watch?v=-Qh1JDsCtR8&list=PLlRRgrbOaGcaHAbVCTk70Nf0GerWXrqy1&index=8
-
-Author
-Shubham Singh
-
-License
 MIT License
+
+Copyright (c) 2026 Shubham Kumar Singh
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
