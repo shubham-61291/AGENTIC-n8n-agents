@@ -1,107 +1,102 @@
-MCP Server and Simple Workflow Agents (n8n + MCP + OpenAI + Gmail)
+<div align="center">
 
-Purpose
-This setup demonstrates the use of the Model Context Protocol (MCP) in n8n for connecting agents, tools, and workflows seamlessly. It consists of two parts:
+# MCP Server and Workflow Client
 
-MCP Server – exposes a tool (Gmail send message) via a webhook.
+### Reusable Gmail tooling for n8n agents through Model Context Protocol
 
-Simple Workflow – uses an AI agent with OpenAI, takes form input from a user, and calls the MCP Client to trigger the Gmail send message tool from the MCP Server. Together, they show how autonomous workflows can use MCP as a bridge between local logic and external tools. 
+[![n8n](https://img.shields.io/badge/automation-n8n-EA4B71?style=flat-square)](https://n8n.io/)
+[![MCP](https://img.shields.io/badge/protocol-MCP-4B7BEC?style=flat-square)](https://modelcontextprotocol.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](./LICENSE)
 
-MCP Server Flow
+</div>
 
-Trigger: MCP Server Trigger node starts when a tool call is made.
+## Overview
 
-Tool: Gmail Tool node configured to send an email message with fields (To, Subject, Message) filled dynamically.
+This project demonstrates how the **Model Context Protocol (MCP)** can connect n8n workflows, AI agents, and reusable tools. It is composed of two workflows: an MCP server that exposes a Gmail message-sending capability and a client workflow that accepts structured form input, processes it with an OpenAI-powered AI agent, and calls the exposed tool to send an acknowledgement.
 
-Connection: The MCP Server Trigger exposes this Gmail action as a callable tool for any MCP Client. 
+The design separates **tool hosting** from **tool invocation**: the server makes a Gmail action available, while the client decides when and how to invoke it.
 
-Simple Workflow Flow
+## Workflows at a glance
 
-Trigger: Form submission with fields: Name, Email, Issue, Preferred Date, Preferred Time.
+| Workflow | Responsibility | Export |
+|---|---|---|
+| MCP server | Exposes Gmail **send message** as a callable MCP tool through an MCP Server Trigger. The message’s recipient, subject, and body are filled dynamically. | [`MCP_SERVER.json`](./MCP_SERVER.json) |
+| Client workflow | Accepts a form submission, uses an OpenAI Chat Model and AI Agent to prepare an acknowledgement, then invokes the server’s Gmail tool through the MCP Client. | [`MCP_WORKFLOW_CLIENT_TOOL.json`](./MCP_WORKFLOW_CLIENT_TOOL.json) |
 
-AI Model: OpenAI Chat Model parses the form submission and prepares structured JSON.
+## End-to-end flow
 
-AI Agent: Uses a system prompt that ensures a Gmail send tool call is always created. The email includes an acknowledgement message with the user’s issue, and confirms that the AI agent will call on the preferred date and time.
+1. **Form submission:** The user supplies Name, Email, Issue, Preferred Date, and Preferred Time.
+2. **AI interpretation:** The OpenAI Chat Model parses the form input and prepares structured JSON for the agent.
+3. **Acknowledgement preparation:** The AI Agent’s system prompt ensures that a Gmail send-tool call is created for the acknowledgement. The acknowledgement includes the user’s issue and confirms that the AI agent will call on the preferred date and time.
+4. **MCP invocation:** The client connects to the MCP Server endpoint and exposes the server’s Gmail tool to the agent.
+5. **Email delivery:** The agent invokes the tool; the server’s Gmail Tool sends the acknowledgement message.
 
-MCP Client: Connects to the MCP Server endpoint, exposing the Gmail tool. The AI Agent invokes this MCP Client to actually send the acknowledgement email.
+**Result:** Form submission → AI Agent → MCP Client → MCP Server → Gmail acknowledgement.
 
-End Result: User submits a form → AI Agent processes → MCP Client calls MCP Server → Gmail sends acknowledgement. 
+## Capabilities
 
-Features
+- Exposes Gmail sending as a reusable MCP tool.
+- Lets an MCP client workflow call the exposed tool on demand.
+- Converts structured form fields into an AI-prepared acknowledgement email.
+- Keeps tool hosting separate from the workflow that calls the tool.
+- Provides a foundation for adding other reusable capabilities, such as calendar scheduling, CRM updates, and custom APIs.
 
-Demonstrates MCP Server exposing Gmail as a reusable tool.
+## Prerequisites
 
-Shows how an MCP Client workflow can call that tool on demand.
+- An n8n instance that supports the MCP Server Trigger and MCP Client nodes used by the exports.
+- A Gmail account and OAuth credentials for the Gmail Tool.
+- An OpenAI API credential for the client’s chat model.
+- Network reachability from the client workflow to the configured MCP Server endpoint.
 
-Structured form → AI Agent → Gmail pipeline for automated acknowledgements.
+## Setup
 
-Clean separation between tool hosting (Server) and tool calling (Client).
+### 1. Import both workflows
 
-Extensible to add more tools (e.g., calendar scheduling, CRM updates) exposed via MCP.
+Import [`MCP_SERVER.json`](./MCP_SERVER.json) and [`MCP_WORKFLOW_CLIENT_TOOL.json`](./MCP_WORKFLOW_CLIENT_TOOL.json) into n8n. The original documentation refers to these as `mcpserver.json` and `mcpsimpleworkflow.json`; the filenames in this repository are the exports linked above.
 
-Setup Instructions
+### 2. Configure credentials
 
-Import both workflows into n8n: mcpserver.json and mcpsimpleworkflow.json.
+- **Gmail OAuth:** connect the Gmail credentials to the Gmail Tool node.
+- **OpenAI API:** connect the OpenAI credential to the chat model used in the client workflow.
 
-Configure credentials:
+### 3. Set environment-specific values
 
-Gmail OAuth for the Gmail Tool.
+| Placeholder | Configure with |
+|---|---|
+| `YOUR_WEBHOOK_ID` | The actual webhook ID generated by your n8n instance, where applicable. |
+| `YOUR_MCP_ENDPOINT_URL` | The reachable endpoint URL of the MCP Server workflow. |
+| `YOUR_GMAIL_CRED_ID` / `YOUR_GMAIL_CRED_NAME` | Your n8n Gmail credential reference. |
+| `YOUR_OPENAI_API_ID` / `YOUR_OPENAI_API_NAME` | Your n8n OpenAI credential reference. |
 
-OpenAI API key for the AI Model.
+The public JSON may contain sanitized or replaced account-specific values by design. Restore them in your own environment; do not publish real credentials or private endpoint details.
 
-Replace placeholders:
+### 4. Publish and connect
 
-YOUR_WEBHOOK_ID → actual webhook ID from your n8n instance.
+1. Publish or activate the MCP Server workflow so that it exposes the Gmail tool.
+2. Configure the Simple Workflow’s MCP Client to use the server endpoint.
+3. Submit the form with a test name, email, issue, preferred date, and preferred time.
+4. Confirm that the acknowledgement reaches the intended Gmail recipient.
 
-YOUR_MCP_ENDPOINT_URL → the endpoint URL for the MCP Server.
+## Security considerations
 
-YOUR_GMAIL_CRED_ID / NAME → Gmail credentials.
+- Do not expose API keys, Gmail OAuth details, or private webhook IDs in a public repository.
+- Keep credentials in n8n’s Credentials vault.
+- Protect the MCP endpoint if it is reachable outside your private environment.
+- Verify the recipient, message content, and endpoint configuration before using the workflow with real users.
 
-YOUR_OPENAI_API_ID / NAME → OpenAI credentials.
+## Demonstration
 
-Publish the MCP Server workflow to expose the Gmail tool.
+[**Watch the MCP server and client demo**](https://www.youtube.com/watch?v=21wv7vN3UvA&list=PLlRRgrbOaGcaHAbVCTk70Nf0GerWXrqy1&index=4)
 
-Connect the Simple Workflow MCP Client to the Server endpoint.
+## MCP in autonomous-agent architectures
 
-Test by submitting the form; confirm that the acknowledgement email is sent through Gmail.
-
-Security Notes
-
-Do not expose real webhook IDs or API keys in public repositories.
-
-Keep Gmail and OpenAI credentials in n8n Credentials vault.
-
-The MCP endpoint should be protected if exposed beyond your environment.
-
-DEMO VIDEO :- https://www.youtube.com/watch?v=21wv7vN3UvA&list=PLlRRgrbOaGcaHAbVCTk70Nf0GerWXrqy1&index=4
-
-Importance of MCP in Autonomous Agents
-The Model Context Protocol (MCP) is rapidly becoming a backbone for connecting agents with external tools in a secure, standardized way. Instead of hardwiring API calls inside every workflow, MCP allows tools like Gmail, Calendars, Databases, and Custom APIs to be exposed as reusable capabilities. Autonomous agents can then dynamically discover and invoke these tools as needed.
-
-This separation of “tool hosting” and “tool calling” makes agent systems more modular, scalable, and easier to govern. For enterprises, MCP will allow safe exposure of business-critical systems (ERP, CRM, HR, Finance) to AI agents without rewriting connectors for each one. Going forward, MCP adoption will be central to building reliable, production-grade autonomous agents.
-
-Author
-Shubham Singh
-
-License
-MIT License
-
-
-
-## Repository workflow files
-
-- [`MCP_SERVER.json`](./MCP_SERVER.json) — MCP server workflow export.
-- [`MCP_WORKFLOW_CLIENT_TOOL.json`](./MCP_WORKFLOW_CLIENT_TOOL.json) — MCP client workflow export.
-
-## Public-export and security context
-
-The workflow JSON is a sanitized public export. Replace intentionally removed account-specific values and configure Gmail OAuth, OpenAI credentials, webhook ID, and MCP endpoint URL in your own n8n instance. Keep the MCP endpoint protected if exposed beyond your environment. These setup requirements are not a claim that the original demonstration was non-functional.
+MCP provides a standardized way to expose tools such as Gmail, calendars, databases, and custom APIs as reusable capabilities. Separating the server that hosts a tool from the agent workflow that calls it makes the design more modular and easier to extend. The same pattern can be applied to business systems such as CRM, ERP, HR, and finance platforms, subject to appropriate access controls and governance.
 
 ## License
 
-This project is licensed under the MIT License. See [`LICENSE`](./LICENSE) for the standalone license file.
+MIT License. See [`LICENSE`](./LICENSE). Full text:
 
-### MIT License Text
+### MIT License
 
 MIT License
 
