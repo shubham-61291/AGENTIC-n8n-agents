@@ -1,79 +1,121 @@
-HR CV Screening & Rating Agent (n8n + Gmail + Google Sheets + AI)
+<div align="center">
 
-This agent automates the process of reading candidate CVs from Gmail, extracting important details, evaluating them against a Job Description using AI, and recording the results with a rating out of 10 into a Google Sheet. It helps HR teams quickly shortlist candidates based on structured AI scoring.
+# HR CV Screening and Rating Agent
 
-Features
+### Extract candidate details from Gmail CVs, evaluate fit, and record results in Sheets
 
-Reads unread CV emails from Gmail automatically.
+[![n8n](https://img.shields.io/badge/automation-n8n-EA4B71?style=flat-square)](https://n8n.io/)
+![Integrations](https://img.shields.io/badge/integrations-Gmail%20%7C%20Google%20Sheets-4B7BEC?style=flat-square)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](./LICENSE)
 
-Extracts candidate details such as first name, last name, email, phone, location, and skills.
+</div>
 
-Uses AI (Gemini or OpenAI) to evaluate the CV against the Job Description.
+## Overview
 
-Assigns a rating score out of 10 for each candidate.
+The HR CV Screening Agent automates an initial candidate-review workflow. It reads unread CV emails from Gmail, extracts candidate information from attachments, evaluates each CV against a job description using an AI model, assigns a score out of 10, and records the structured result in Google Sheets.
 
-Appends candidate details and their rating into a Google Sheet.
+The documented candidate fields are **first name, last name, email, phone, location, and skills**. The AI evaluation uses a job description (JD) as the comparison target. The README describes the model as Gemini or OpenAI, depending on the selected model configuration.
 
-Extensible for automating rejection or selection messages.
+## Processing pipeline
 
-Files
+| Stage | Purpose |
+|---|---|
+| **Gmail Trigger** | Detects unread email messages containing candidate CVs. |
+| **Text Classifier** | Routes relevant CV emails for processing and sends non-matching items to a no-operation branch. |
+| **Extract from File** | Extracts content from the CV attachment (the export includes PDF extraction). |
+| **AI Agent** | Evaluates candidate fit against the job description and produces structured candidate details and a rating. |
+| **AI model and Structured Output Parser** | Supports the agent’s model response and structured output. The setup documentation refers to Gemini or OpenAI as selectable options. |
+| **Append or update row in sheet** | Writes candidate details and the rating into the configured Google Sheet. |
 
-hr_cv_screening_agent_n8n.json → n8n workflow export.
+## Candidate output
 
-Setup Instructions
+The project documentation calls out these fields:
 
-Import Workflow
+- Name (first and last)
+- Email
+- Phone
+- Location
+- Skills
+- Rating (out of 10)
 
-In n8n, go to Workflows → Import from File.
+The destination Google Sheet should have corresponding columns. This workflow is intended to speed up initial review and provide structured scores for recruiter follow-up; the score should be considered an AI-generated screening aid rather than a replacement for human hiring decisions.
 
-Gmail Setup
+## Requirements
 
-Replace Gmail placeholders with your own credentials in n8n.
+- n8n.
+- Gmail access and a configured Gmail Trigger credential.
+- CV attachments in the expected file format (the public export includes a PDF extraction path).
+- A selected AI model credential, Gemini or OpenAI according to your configuration.
+- Google Sheets credentials and a spreadsheet prepared with the candidate columns.
+- A job description used by the evaluation instructions.
 
-Ensure workflow can read unread emails with CV attachments.
+## Setup
 
-Google Sheets Setup
+### 1. Import the workflow
 
-Replace YOUR_SHEET_ID and YOUR_SHEET_URL with your Google Sheet details.
+Import [`HR_AI_AGENT_CV_SCREENING.json`](./HR_AI_AGENT_CV_SCREENING.json) using **Workflows → Import from File**.
 
-The sheet should have columns for: Name, Email, Phone, Location, Skills, Rating.
+### 2. Configure Gmail
 
-AI Model Setup
+Connect your Gmail credential and ensure the workflow can read unread messages with CV attachments.
 
-Replace YOUR_OPENAI_API_KEY or YOUR_GEMINI_API_KEY placeholders with actual keys.
+### 3. Configure Google Sheets
 
-Select the model node to evaluate CVs against JD.
+Set the spreadsheet ID and URL for your destination sheet and confirm the sheet includes columns for Name, Email, Phone, Location, Skills, and Rating.
 
-Candidate Data Placeholders
+### 4. Configure the AI evaluation
 
-Workflow uses placeholders like FIRST_NAME_PLACEHOLDER, LAST_NAME_PLACEHOLDER, EMAIL_PLACEHOLDER, PHONE_PLACEHOLDER, LOCATION_PLACEHOLDER.
+Provide your selected model credential (OpenAI or Google Gemini) and ensure the model node and structured output configuration match your chosen setup. Keep the job description used for the comparison current and role-specific.
 
-These will be filled dynamically when CVs are processed.
+### 5. Map candidate fields and placeholders
 
-Run Workflow
+The source README names placeholders such as `FIRST_NAME_PLACEHOLDER`, `LAST_NAME_PLACEHOLDER`, `EMAIL_PLACEHOLDER`, `PHONE_PLACEHOLDER`, `LOCATION_PLACEHOLDER`, `YOUR_SHEET_ID`, `YOUR_SHEET_URL`, `YOUR_OPENAI_API_KEY`, and `YOUR_GEMINI_API_KEY`. Populate the corresponding mappings and credentials for your own deployment. The public export intentionally omits or replaces environment-specific and personal values; configure those locally rather than publishing private data.
 
-Trigger manually or schedule it.
+### 6. Test the workflow
 
-Every unread email with a CV will be processed, scored out of 10, and appended to the Google Sheet.
+Trigger the workflow manually or schedule it as configured, using an unread test email containing a CV. Verify that candidate information is extracted, evaluated against the intended job description, scored out of 10, and written to the correct row in Google Sheets.
 
-Security
+## Security and responsible use
 
-Do not commit real API keys, Gmail credentials, or sheet IDs.
+- Keep Gmail credentials, AI API keys, and sheet identifiers private.
+- Candidate CVs contain personal data. Restrict spreadsheet and mailbox access to authorized users.
+- Review AI-generated scores and extracted data before making hiring decisions.
+- Avoid logging or sharing candidate information beyond the authorized recruitment process.
 
-Use environment variables inside n8n for sensitive values.
+## Possible extensions
 
-DEMO VIDEO :- https://www.youtube.com/watch?v=mOv1Xj8OaPE&list=PLlRRgrbOaGcaHAbVCTk70Nf0GerWXrqy1&index=2
+- Add scoring thresholds (for example, flag candidates below 5/10).
+- Send automated rejection or interview emails after human review or defined criteria.
+- Integrate with an applicant-tracking system (ATS) or HRMS.
 
-Next Steps
+## Demonstration
 
-Add thresholds (e.g., auto-flag candidates below 5/10).
+[**Watch the HR CV screening demo**](https://www.youtube.com/watch?v=mOv1Xj8OaPE&list=PLlRRgrbOaGcaHAbVCTk70Nf0GerWXrqy1&index=2)
 
-Send automated rejection or interview emails.
+## License
 
-Integrate with ATS/HRMS for end-to-end recruitment automation.
+MIT License. See [`LICENSE`](./LICENSE). Full text:
 
-Author
-Shubham Singh
+### MIT License
 
-License
 MIT License
+
+Copyright (c) 2026 Shubham Kumar Singh
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
