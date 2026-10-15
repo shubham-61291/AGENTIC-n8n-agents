@@ -85,3 +85,42 @@ Shubham Singh
 
 License
 MIT License
+
+
+
+## Repository workflow files
+
+- [`MCP_SERVER.json`](./MCP_SERVER.json) — MCP server workflow export.
+- [`MCP_WORKFLOW_CLIENT_TOOL.json`](./MCP_WORKFLOW_CLIENT_TOOL.json) — MCP client workflow export.
+
+## Public-export and security context
+
+The workflow JSON is a sanitized public export. Replace intentionally removed account-specific values and configure Gmail OAuth, OpenAI credentials, webhook ID, and MCP endpoint URL in your own n8n instance. Keep the MCP endpoint protected if exposed beyond your environment. These setup requirements are not a claim that the original demonstration was non-functional.
+
+## License
+
+This project is licensed under the MIT License. See [`LICENSE`](./LICENSE) for the standalone license file.
+
+### MIT License Text
+
+MIT License
+
+Copyright (c) 2026 Shubham Kumar Singh
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
