@@ -1,126 +1,147 @@
-HR Chatbot with Website Integration (n8n + Google Gemini + Supabase + Postgres)
+<div align="center">
 
-Purpose
-This agent powers a website-integrated HR chatbot that answers user questions using your private HR knowledge base. It receives chat messages via a public webhook, retrieves relevant context from a Supabase vector store, keeps conversation memory in Postgres, and generates answers with Google Gemini. It also includes a document-ingestion path to chunk and embed new files into the vector store. 
+# HR Chatbot with Website Integration
 
-Core flow (runtime)
+### Retrieval-augmented answers, persistent chat memory, and document ingestion
 
-Trigger: “When chat message received” (public webhook).
+[![n8n](https://img.shields.io/badge/automation-n8n-EA4B71?style=flat-square)](https://n8n.io/)
+![RAG](https://img.shields.io/badge/pattern-RAG-4B7BEC?style=flat-square)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](./LICENSE)
 
-LLM: Google Gemini Chat Model generates responses.
+**Stack:** n8n · Google Gemini · Supabase Vector Store · PostgreSQL Chat Memory
 
-Memory: Postgres Chat Memory stores conversation history for better continuity.
+</div>
 
-Retrieval: Supabase Vector Store in “retrieve-as-tool” mode provides RAG context to the AI Agent (tool description currently set to “HR POLICY FOR SUPERNOVA”).
+## Overview
 
-Agent: AI Agent orchestrates LLM + memory + retrieval and returns final answers to the chat trigger. 
+This workflow powers a website-integrated HR chatbot that answers questions against a private HR knowledge base. Incoming messages arrive through the public webhook used by the chat trigger. The AI Agent uses Google Gemini to compose answers, retrieves relevant policy context from a Supabase vector store, and uses Postgres Chat Memory to retain conversational context across turns.
 
-Ingestion flow (to load knowledge)
+The exported workflow also contains a document-ingestion path: binary documents are loaded, split into chunks, embedded with Google Gemini embeddings, and inserted into Supabase for retrieval by the chat agent.
 
-Document Default Data Loader (expects binary file input).
+## Architecture
 
-Character Text Splitter with custom settings (separator “1000”, chunk overlap 150).
+| Component | Role in the workflow |
+|---|---|
+| **When chat message received** | Receives chat messages from a website or chat widget through the public chat trigger. |
+| **AI Agent** | Orchestrates response generation and uses the retrieval tool to access HR-policy context. |
+| **Google Gemini Chat Model** | Generates the conversational answer. |
+| **Postgres Chat Memory** | Persists conversation history so responses can remain contextual across turns. |
+| **Supabase Vector Store — retrieve-as-tool** | Supplies RAG context to the agent; the documented tool description is `HR POLICY FOR SUPERNOVA`. |
+| **Embeddings Google Gemini** | Creates embeddings used by the retrieval and ingestion paths. |
+| **Default Data Loader** | Reads binary file input, such as a PDF or document, for ingestion. |
+| **Character Text Splitter** | Splits loaded content into overlapping chunks. The source README describes the separator as `1000` and chunk overlap as `150`. |
+| **Supabase Vector Store — insert** | Stores document text and embeddings in the configured Supabase table, shown as `documents` by default. |
 
-Embeddings Google Gemini to embed chunks.
+## Runtime question-answering flow
 
-Supabase Vector Store (mode “insert”) to write embeddings and texts into your Supabase table (default shown as “documents”). 
+1. A website widget or client sends a message to the **When chat message received** trigger.
+2. The AI Agent receives the message and uses the Google Gemini Chat Model to formulate a response.
+3. The agent can call the Supabase Vector Store in **retrieve-as-tool** mode to ground its answer in the HR knowledge base.
+4. Postgres Chat Memory provides prior conversation context.
+5. The final response is returned through the chat trigger to the calling interface.
 
-What each node does
+## Document-ingestion flow
 
-When chat message received: exposes a public webhook to receive chat messages from your site or widget.
+1. Provide a document as binary input to the **Default Data Loader**.
+2. The **Character Text Splitter** creates chunks with the configured overlap.
+3. Google Gemini Embeddings converts chunks into vector representations.
+4. The Supabase Vector Store in insert mode writes the chunks and embeddings to the configured table.
+5. The retrieval path can then use the stored material to answer related questions.
 
-AI Agent: runs with a system message that tells it to retrieve and present relevant information from the vector store.
+The workflow’s published ingestion path expects binary file input. The source README suggests supplying a PDF through the n8n UI or adding a separate upload webhook as appropriate to the deployment.
 
-Google Gemini Chat Model: primary LLM for answer generation.
+## Requirements
 
-Postgres Chat Memory: persists chat history so answers can be contextual and multi-turn.
+- n8n with the LangChain / AI nodes used in the workflow.
+- Google Gemini API access for the chat model and embeddings.
+- A Supabase project with a vector-store table configured for the workflow.
+- A PostgreSQL connection for chat memory.
+- A website chat widget or client that can send messages to the chat trigger.
 
-Supabase Vector Store (retrieve-as-tool): RAG retrieval tool used by the agent at answer time (table “documents”, tool description “HR POLICY FOR SUPERNOVA”).
+## Setup
 
-Embeddings Google Gemini: embedding model used for retrieval and for ingestion.
+### 1. Import the workflow
 
-Default Data Loader: reads binary files (PDFs, docs) for ingestion.
+Import [`RAG_BASED_HR_CHATBOT_WEBSITE_INTEGRATED.json`](./RAG_BASED_HR_CHATBOT_WEBSITE_INTEGRATED.json) via **Workflows → Import from File** in n8n.
 
-Character Text Splitter: splits loaded text into chunks with overlap.
+### 2. Configure credentials
 
-Supabase Vector Store (insert): writes embedded chunks into the vector store. 
+- **Gemini:** add the Google Gemini (PaLM/Gemini) API credential and bind it to both the chat model and embeddings nodes.
+- **Postgres:** configure the host, port, database, username, password, and SSL options required by the memory node.
+- **Supabase:** configure the Supabase URL and API key and bind the credential to both vector-store nodes (retrieve and insert).
 
-Setup (step by step)
+### 3. Configure vector-store settings
 
-Import the workflow
+- **Table:** the supplied configuration shows `documents`; change it if your Supabase schema uses another table.
+- **Tool description:** the supplied description is `HR POLICY FOR SUPERNOVA`. Replace it with a clear description of your own knowledge domain, such as `HR Policy Handbook`.
+- **Embeddings:** use a compatible embedding configuration for documents inserted into the store and for retrieval at query time.
 
-In n8n, go to Workflows → Import from File and load the JSON.
+### 4. Connect the website
 
-Connect credentials (in n8n Credentials)
+Open **When chat message received** and copy the webhook URL generated by n8n. Connect your website chat widget or send chat messages as JSON to that endpoint. The chat webhook is public by default; protect it with a token header, IP allowlist, reverse proxy, or authenticated gateway when appropriate.
 
-Gemini (PaLM/Gemini) API: add your key and bind it to the Google Gemini Chat Model and Embeddings nodes.
+### 5. Ingest HR documents
 
-Postgres: add a connection for the memory node (host, port, database, user, password, SSL as needed).
+Run the ingestion path with a binary file supplied to the Default Data Loader. Check that the splitter and embeddings nodes execute and that the documents are inserted into the Supabase table. The source setup notes describe loading a small PDF through the UI or adding a separate upload webhook if document uploads need to be initiated externally.
 
-Supabase: add your Supabase URL and API key; bind to both Supabase Vector Store nodes (retrieve + insert). 
+## Environment-specific placeholders
 
-Configure data store details
+| Value | Purpose |
+|---|---|
+| `YOUR_WEBHOOK_URL` | The chat webhook URL generated after import. |
+| `YOUR_GEMINI_API_KEY` | Gemini access for the chat and embeddings nodes. |
+| `YOUR_SUPABASE_URL` / `YOUR_SUPABASE_API_KEY` | Supabase vector-store access. |
+| `YOUR_POSTGRES_CONNECTION` | PostgreSQL host, port, database, user, password, and SSL settings for memory. |
+| `YOUR_TABLE_NAME` | Target vector-store table; the supplied example is `documents`. |
+| `YOUR_TOOL_DESCRIPTION` | Knowledge-domain description used by the retrieval tool. |
 
-Supabase table: replace the table name “documents” with your own if different.
+The public export may have sanitized or removed account-specific details. Restore the appropriate values in your own n8n environment; this publication practice is distinct from the workflow’s demonstrated purpose.
 
-Tool description: change “HR POLICY FOR SUPERNOVA” to describe your actual knowledge domain (e.g., “HR Policy Handbook”). 
+## Verification and troubleshooting
 
-Expose the chatbot on your website
+1. Send a test question to the public webhook and verify that the agent responds with relevant retrieved content from the knowledge base.
+2. Ingest a small PDF (the original README suggests two pages), then ask a question whose answer should come from that document.
+3. Confirm that the expected embeddings and text are present in the configured Supabase table.
+4. Check Postgres to confirm that conversation history is saved and available in later turns.
+5. If answers ignore the knowledge base, check that embeddings exist and that the retrieve-as-tool node points to the correct table.
+6. If memory is not retained, verify the Postgres credential and the memory node’s connection to the agent.
+7. If the webhook returns `404` or `401`, save the workflow and copy the correct production URL from the trigger node.
 
-Open the “When chat message received” node and copy the webhook URL.
+## Security
 
-Connect your website chat widget or POST chat messages (JSON) to this webhook.
+- Never commit live API keys, database credentials, or private webhook values.
+- Validate uploaded files before adding a public ingestion route.
+- Avoid exposing a public chat endpoint without an appropriate access-control strategy.
+- Grant access to HR material only to authorized users.
 
-Keep the node public or secure it behind your preferred method (reverse proxy, token, IP allowlist).
+## Demonstration
 
-Ingest content (populate the vector store)
+[**Watch the HR chatbot website-integration demo**](https://www.youtube.com/watch?v=czIQ1PzZAg0&list=PLlRRgrbOaGcaHAbVCTk70Nf0GerWXrqy1&index=5)
 
-In n8n, execute the ingestion path: provide a binary file to the Default Data Loader (e.g., upload a PDF via UI or add a separate upload webhook).
+## License
 
-Ensure the Character Text Splitter and Embeddings nodes run, then confirm inserts land in your Supabase “documents” table. 
+MIT License. See [`LICENSE`](./LICENSE). Full text:
 
-Environment and placeholders to set (no secrets in JSON)
+### MIT License
 
-YOUR_WEBHOOK_URL (generated by the chat trigger after import).
-
-YOUR_GEMINI_API_KEY (for the chat model and embeddings).
-
-YOUR_SUPABASE_URL and YOUR_SUPABASE_API_KEY (vector store).
-
-YOUR_POSTGRES_CONNECTION (host, port, db, user, password, SSL) for chat memory.
-
-YOUR_TABLE_NAME (default “documents”; change if you use a different schema).
-
-YOUR_TOOL_DESCRIPTION (domain phrase the agent uses when retrieving context).
-
-Security notes
-
-The chat webhook is public by default; protect it if needed (token header, IP allowlist, or put n8n behind an authenticated gateway).
-
-Never commit live API keys or database credentials. Store all secrets in n8n Credentials or environment variables.
-
-Validate uploaded files before ingestion if you add a public upload route.
-
-Testing
-
-Send a test message to the webhook; verify the AI response includes retrieved snippets from your knowledge base.
-
-Ingest a small PDF (e.g., two pages), then ask a question that should be answerable only from that PDF to confirm retrieval is working.
-
-Check Postgres to ensure new conversations are saved and recalled in later turns. 
-
-Troubleshooting
-
-If answers ignore your documents, confirm embeddings exist in Supabase and the retrieve-as-tool node points to the correct table.
-
-If memory does not stick, verify Postgres credentials and that the memory node is connected to the agent.
-
-If the webhook returns 404/401, re-copy the exact production URL from the node after saving the workflow.
-
-DEMO VIDEO :- https://www.youtube.com/watch?v=czIQ1PzZAg0&list=PLlRRgrbOaGcaHAbVCTk70Nf0GerWXrqy1&index=5
-
-Author
-Shubham Singh
-
-License
 MIT License
+
+Copyright (c) 2026 Shubham Kumar Singh
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
